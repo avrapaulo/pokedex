@@ -4,6 +4,8 @@ import HtmlWebpackPlugin from 'html-webpack-plugin'
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import ESLintPlugin from 'eslint-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
+import CopyPlugin from 'copy-webpack-plugin'
+import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin'
 
 const config: webpack.Configuration = {
   mode: 'development',
@@ -30,6 +32,11 @@ const config: webpack.Configuration = {
     ]
   },
   resolve: {
+    plugins: [
+      new TsconfigPathsPlugin({
+        configFile: './tsconfig.json'
+      }) as any
+    ],
     extensions: ['.tsx', '.ts', '.js']
   },
   plugins: [
@@ -46,7 +53,15 @@ const config: webpack.Configuration = {
     new ESLintPlugin({
       extensions: ['js', 'jsx', 'ts', 'tsx']
     }),
-    new webpack.HotModuleReplacementPlugin()
+    new webpack.HotModuleReplacementPlugin(),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, './src/assets/images').replace(/\\/g, '/'),
+          to: 'assets/images'
+        }
+      ]
+    })
   ],
   devtool: 'inline-source-map',
   devServer: {
