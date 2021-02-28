@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .bg-mix {
+    background-image: linear-gradient(
+      to right,
+      #000,
+      #301319,
+      #5b1d24,
+      #872728,
+      #b13824,
+      #b13824,
+      #b13824,
+      #b13824,
+      #872728,
+      #5b1d24,
+      #301319,
+      #000
+    );
+  }
+}
