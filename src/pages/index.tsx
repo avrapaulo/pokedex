@@ -1,74 +1,96 @@
-import { selector, useRecoilValueLoadable } from 'recoil'
-import { IType } from 'models/type'
-import { IPokemon } from 'models/pokemon'
-import { fetchWrapper } from 'utils/fetch'
-import { formatId } from 'utils'
-import { POKE_TYPES } from 'constants/types'
+import { useState, useRef, useEffect } from 'react'
+import { GetStaticProps } from 'next'
+import { Cart } from 'components/cart'
+import { IType, IPokemon } from 'models'
+import { fetchWrapper } from 'utils'
+import { Pokeball } from 'constants/svg'
+import { DEFAULT_LIMIT } from 'constants/defaults'
 
-const currentPokeQuery = selector({
-  key: 'pokemonsList',
-  get: async () => {
-    const pokemons = await fetchWrapper('https://pokeapi.co/api/v2/pokemon/?limit=151')
+const fetchPokemon = async ({
+  offset,
+  limit = DEFAULT_LIMIT
+}: {
+  offset?: number
+  limit?: number
+}) => {
+  const json = await fetchWrapper({
+    path: `/pokemon/?limit=${limit}${offset ? `&offset=${offset}` : ''}`
+  })
 
-    const result: Promise<IPokemon[]> = Promise.all(
-      pokemons.results.map(async (pokemon: any) => {
-        const info = await fetchWrapper(pokemon.url)
-        const species = await fetchWrapper(info.species.url)
+  const pokemons: IPokemon[] = await Promise.all(
+    json.results.map(async (pokemon: any) => {
+      const info = await fetchWrapper({ url: pokemon.url })
+      const species = await fetchWrapper({ url: info.species.url })
 
-        const types: IType[] = info.types.map((type: any) => ({ name: type.type.name }))
+      const types: IType[] = info.types.map((pokeType: any) => ({ name: pokeType.type.name }))
 
-        return {
-          name: pokemon.name,
-          id: info.id,
-          image: info.sprites.other['official-artwork'].front_default,
-          color: species.color.name,
-          types
-        }
-      })
-    )
+      return {
+        name: pokemon.name,
+        id: info.id,
+        image: info.sprites.other['official-artwork'].front_default,
+        color: species.color.name,
+        types
+      }
+    })
+  )
 
-    return result
-  }
-})
+  return { pokemons }
+}
 
-const App = () => {
-  const { contents: pokemons, state } = useRecoilValueLoadable(currentPokeQuery)
-  if (state === 'hasError') return null
-  if (state === 'loading') return null
+const App = ({ pokemons }: { pokemons: IPokemon[] }) => {
+  const [poke, setPoke] = useState(pokemons)
+  const [page, setPage] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+  const loader = useRef()
+
+  useEffect(() => {
+    const options = {
+      root: null,
+      rootMargin: '20px',
+      threshold: 1
+    }
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        setPage(pageNumber => pageNumber + 1)
+      }
+    }, options)
+    if (loader.current) {
+      observer.observe(loader.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    const fetchPokemonPage = async () => {
+      setIsLoading(true)
+      const { pokemons: data } = await fetchPokemon({ offset: DEFAULT_LIMIT * page })
+      setPoke([...poke, ...data])
+      setIsLoading(false)
+    }
+    if (page !== 0) fetchPokemonPage()
+  }, [page])
+
+  const clickPage = () => console.log(page)
 
   return (
     <section>
-      <div className="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 grid-cols-3 xl:gap-8 md:gap-6 gap-2 md:mx-0 mx-3">
-        {Array.isArray(pokemons) &&
-          pokemons.map(({ name, image, color, types, id }) => (
-            <div key={name} className={`bg-${color}-400 rounded-3xl relative overflow-hidden`}>
-              <div className="absolute right-0">
-                <p
-                  className={`bg-${color}-600 ${
-                    color !== 'black' ? 'text-white' : 'text-black'
-                  } font-medium rounded-bl-2xl pl-3 pr-4 py-1 text-xs bg-opacity-80`}
-                >
-                  {formatId(id)}
-                </p>
-              </div>
-              <img className="mt-3" src={image} />
-              <div className="flex justify-evenly">
-                {types.map(({ name }: IType) => (
-                  <img className="h-9" title={name} key={name} src={POKE_TYPES[name]?.image} />
-                ))}
-              </div>
-              <div
-                className={`text-center text-lg mb-2 mt-1 font-medium uppercase ${
-                  color === 'white' ? 'text-black' : 'text-white'
-                }`}
-              >
-                {name}
-              </div>
-            </div>
+      <>
+        <div onClick={clickPage}>asd</div>
+        <div className="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 grid-cols-3 xl:gap-8 md:gap-6 gap-2 md:mx-0 mx-3">
+          {poke.map(({ name, image, color, types, id }) => (
+            <Cart key={id} name={name} image={image} color={color} types={types} id={id} />
           ))}
-      </div>
+        </div>
+        <div ref={loader}>
+          <Pokeball />
+        </div>
+      </>
     </section>
   )
+}
+
+export const getStaticProps: GetStaticProps = async () => {
+  const { pokemons } = await fetchPokemon({})
+  return { props: { pokemons } }
 }
 
 export default App
