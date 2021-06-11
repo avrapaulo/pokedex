@@ -1,9 +1,10 @@
-import { IType } from './type'
+import { Type } from './type'
 
-export interface IPokemon {
-  id: number
-  name: string
-  image: string
-  color: string
-  types: IType[]
+export interface Pokemon {
+  pokemon: {
+    id: number
+    name: string
+    specy: { color: { name: string } }
+    types: Type[]
+  }[]
 }

@@ -1,6 +1,6 @@
-import { ITypeIcons } from 'models/type'
+import { TypeIcons } from 'models/type'
 
-export const POKE_TYPES: ITypeIcons = {
+export const POKE_TYPES: TypeIcons = {
   bug: { name: 'bug', image: 'images/bug.png' },
   dark: { name: 'dark', image: 'images/dark.png' },
   dragon: { name: 'dragon', image: 'images/dragon.png' },

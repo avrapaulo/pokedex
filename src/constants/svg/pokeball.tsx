@@ -6,7 +6,7 @@ export const Pokeball = () => (
     x="0px"
     y="0px"
     viewBox="0 0 512 512"
-    className="h-24 animate-spin mt-10 mx-auto"
+    className="h-24 animate-spin mx-auto"
     enableBackground="new 0 0 512 512;"
   >
     <path

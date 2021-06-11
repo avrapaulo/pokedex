@@ -1,8 +1,15 @@
 import { POKE_TYPES } from 'constants/types'
-import { IPokemon, IType } from 'models'
+import { Type } from 'models'
 import { formatId } from 'utils'
 
-export const Cart = ({ id, name, image, color, types }: IPokemon) => (
+interface CartProps {
+  id: number
+  name: string
+  color: string
+  types: Type[]
+}
+
+export const Cart = ({ id, name, color, types }: CartProps) => (
   <div key={name} className={`bg-${color}-400 rounded-3xl relative overflow-hidden shadow-2xl`}>
     <div className="absolute right-0">
       <p
@@ -13,9 +20,12 @@ export const Cart = ({ id, name, image, color, types }: IPokemon) => (
         {formatId(id)}
       </p>
     </div>
-    <img className="mt-3" src={image} />
+    <img
+      className="mt-3"
+      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`}
+    />
     <div className="flex justify-evenly">
-      {types.map(({ name }: IType) => (
+      {types.map(({ type: { name } }) => (
         <img className="h-9" title={name} key={name} src={POKE_TYPES[name]?.image} />
       ))}
     </div>

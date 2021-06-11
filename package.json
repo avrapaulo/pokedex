@@ -12,12 +12,17 @@
     "lint": "yarn lint:ts && yarn lint:prettier && yarn lint:css"
   },
   "dependencies": {
+    "@apollo/client": "^3.3.19",
+    "apollo": "^2.33.2",
     "cross-env": "^7.0.3",
+    "deepmerge": "^4.2.2",
+    "graphql": "^15.5.0",
     "next": "^10.2.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
   "devDependencies": {
+    "@types/graphql": "^14.5.0",
     "@types/node": "14.14.10",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
@@ -35,6 +40,7 @@
     "eslint-plugin-react": "^7.21.5",
     "eslint-plugin-standard": "^5.0.0",
     "husky": "^4.3.0",
+    "lodash": "^4.17.21",
     "postcss": "^8.2.0",
     "prettier": "^2.2.1",
     "stylelint": "^13.8.0",

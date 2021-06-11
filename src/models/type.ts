@@ -1,7 +1,9 @@
-export interface ITypeIcons {
+export interface TypeIcons {
   [key: string]: { name: string; image: string }
 }
 
-export interface IType {
-  name: string
+export interface Type {
+  type: {
+    name: string
+  }
 }
