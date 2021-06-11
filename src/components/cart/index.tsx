@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { POKE_TYPES } from 'constants/types'
 import { Type } from 'models'
 import { formatId } from 'utils'
@@ -20,10 +21,14 @@ export const Cart = ({ id, name, color, types }: CartProps) => (
         {formatId(id)}
       </p>
     </div>
-    <img
-      className="mt-3"
-      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`}
-    />
+    <div className="mt-3">
+      <Image
+        alt={name}
+        width="174"
+        height="174"
+        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`}
+      />
+    </div>
     <div className="flex justify-evenly">
       {types.map(({ type: { name } }) => (
         <img className="h-9" title={name} key={name} src={POKE_TYPES[name]?.image} />
