@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import { useQuery } from '@apollo/client'
 import { GetStaticProps } from 'next'
 import { addApolloState, initializeApollo } from 'lib/apollo'
@@ -12,7 +12,6 @@ const App = () => {
   const { data, fetchMore } = useQuery<Pokemon>(GetPokemons, {
     variables: { limit: DEFAULT_LIMIT, offset: 0 }
   })
-  const [page, setPage] = useState(0)
   const loader = useRef()
 
   useEffect(() => {
@@ -23,40 +22,34 @@ const App = () => {
     }
     const observer = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting) {
-        setPage(pageNumber => pageNumber + 1)
+        fetchMore({
+          variables: {
+            limit: DEFAULT_LIMIT,
+            offset: data.pokemon.length
+          },
+          updateQuery: (previousResult: Pokemon, { fetchMoreResult }) => {
+            if (!fetchMoreResult) {
+              return previousResult
+            }
+            return Object.assign({}, previousResult, {
+              pokemon: [...previousResult.pokemon, ...fetchMoreResult.pokemon]
+            })
+          }
+        })
       }
     }, options)
 
     if (loader.current) {
       observer.observe(loader.current)
     }
-  }, [])
-
-  useEffect(() => {
-    if (page !== 0) {
-      fetchMore({
-        variables: {
-          limit: DEFAULT_LIMIT,
-          offset: data.pokemon.length
-        },
-        updateQuery: (previousResult: Pokemon, { fetchMoreResult }) => {
-          if (!fetchMoreResult) {
-            return previousResult
-          }
-          return Object.assign({}, previousResult, {
-            pokemon: [...previousResult.pokemon, ...fetchMoreResult.pokemon]
-          })
-        }
-      })
+    return () => {
+      observer.unobserve(loader.current)
     }
-  }, [page])
-
-  const clickPage = () => console.log(page)
+  }, [data.pokemon])
 
   return (
     <section>
       <>
-        <div onClick={clickPage}>asd</div>
         <div className="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 grid-cols-3 xl:gap-8 md:gap-6 gap-2 md:mx-0 mx-3">
           {data &&
             data.pokemon.map(
