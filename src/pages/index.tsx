@@ -1,32 +1,40 @@
 import { useRef, useEffect } from 'react'
-import { useQuery } from '@apollo/client'
 import { GetStaticProps } from 'next'
+import { useQuery } from '@apollo/client'
+import { useRecoilValue } from 'recoil'
 import { addApolloState, initializeApollo } from 'lib/apollo'
 import { Cart } from 'components/cart'
 import { Pokemon } from 'models'
-import { Pokeball } from 'constants/svg'
-import { DEFAULT_LIMIT } from 'constants/defaults'
+import { Pokeball } from 'constant/svg'
+import { DEFAULT_LIMIT } from 'constant'
 import { GetPokemons } from 'lib/graphql/get-pokemons'
+import { PokeFetchVariables } from 'utils/poke-fetch-helper'
+import { ScrollToTop } from '../components/scroll-top/index'
+import { Filters, selectedTypes } from '../components/filters/index'
 
 const App = () => {
-  const { data, fetchMore } = useQuery<Pokemon>(GetPokemons, {
-    variables: { limit: DEFAULT_LIMIT, offset: 0 }
+  const atomSelectedTypes = useRecoilValue(selectedTypes)
+  const { data, error, loading, fetchMore } = useQuery<Pokemon>(GetPokemons, {
+    variables: {
+      limit: DEFAULT_LIMIT,
+      offset: 0
+    }
   })
   const loader = useRef()
 
   useEffect(() => {
     const options = {
       root: null,
-      rootMargin: '0px 0px 0px 0px',
+      rootMargin: '0px',
       threshold: 1
     }
     const observer = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting) {
         fetchMore({
-          variables: {
-            limit: DEFAULT_LIMIT,
-            offset: data.pokemon.length
-          },
+          variables: PokeFetchVariables({
+            offset: data.pokemon.length,
+            types: atomSelectedTypes
+          }),
           updateQuery: (previousResult: Pokemon, { fetchMoreResult }) => {
             if (!fetchMoreResult) {
               return previousResult
@@ -45,28 +53,28 @@ const App = () => {
     return () => {
       observer.unobserve(loader.current)
     }
-  }, [data.pokemon])
+  }, [data.pokemon, atomSelectedTypes])
 
   return (
     <section>
-      <>
-        <div className="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 grid-cols-3 xl:gap-8 md:gap-6 gap-2 md:mx-0 mx-3">
-          {data &&
-            data.pokemon.map(
-              ({
-                id,
-                name,
-                specy: {
-                  color: { name: color }
-                },
-                types
-              }) => <Cart key={id} name={name} color={color} id={id} types={types} />
-            )}
-        </div>
-        <div className="mb-6 mt-10" ref={loader}>
-          <Pokeball />
-        </div>
-      </>
+      <Filters fetchMore={fetchMore} />
+      <div className="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 xl:gap-8 md:gap-6 gap-2 md:mx-0 mx-3">
+        {data &&
+          data.pokemon.map(
+            ({
+              id,
+              name,
+              specy: {
+                color: { name: color }
+              },
+              types
+            }) => <Cart key={id} name={name} color={color} id={id} types={types} />
+          )}
+      </div>
+      <ScrollToTop />
+      <div className="mb-6 mt-10" ref={loader}>
+        <Pokeball />
+      </div>
     </section>
   )
 }
