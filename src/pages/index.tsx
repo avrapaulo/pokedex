@@ -28,6 +28,9 @@ const App = () => {
       rootMargin: '0px',
       threshold: 1
     }
+
+    const _loader = loader.current
+
     const observer = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting) {
         fetchMore({
@@ -47,13 +50,13 @@ const App = () => {
       }
     }, options)
 
-    if (loader.current) {
-      observer.observe(loader.current)
+    if (_loader) {
+      observer.observe(_loader)
     }
     return () => {
-      observer.unobserve(loader.current)
+      observer.unobserve(_loader)
     }
-  }, [data.pokemon, atomSelectedTypes])
+  }, [data.pokemon, atomSelectedTypes, fetchMore])
 
   return (
     <section>
