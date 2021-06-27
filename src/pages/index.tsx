@@ -1,20 +1,29 @@
 import { useRef, useEffect } from 'react'
 import { GetStaticProps } from 'next'
+import Image from 'next/image'
 import { useQuery } from '@apollo/client'
-import { useRecoilValue } from 'recoil'
+import { useRecoilValue, useRecoilState } from 'recoil'
 import { addApolloState, initializeApollo } from 'lib/apollo'
-import { Cart } from 'components/cart'
-import { Pokemon } from 'models'
-import { Pokeball } from 'constant/svg'
+import { GetPokemons } from 'lib/graphql'
+import { inputName, isLastPokemon, selectedTypes } from 'lib/recoil'
+import { PokeFetchVariables } from 'utils'
 import { DEFAULT_LIMIT } from 'constant'
-import { GetPokemons } from 'lib/graphql/get-pokemons'
-import { PokeFetchVariables } from 'utils/poke-fetch-helper'
-import { ScrollToTop } from '../components/scroll-top/index'
-import { Filters, selectedTypes } from '../components/filters/index'
+import { Pokeball } from 'constant/svg'
+import { Pokemon } from 'models'
+import { Cart } from 'components/cart'
+import { ScrollToTop } from 'components/scroll-top'
+import { Filters } from 'components/filters'
 
 const App = () => {
   const atomSelectedTypes = useRecoilValue(selectedTypes)
-  const { data, error, loading, fetchMore } = useQuery<Pokemon>(GetPokemons, {
+  const atomInputName = useRecoilValue(inputName)
+  const [lastItem, setLastItem] = useRecoilState(isLastPokemon)
+  const {
+    data: { pokemon },
+    error,
+    loading,
+    fetchMore
+  } = useQuery<Pokemon>(GetPokemons, {
     variables: {
       limit: DEFAULT_LIMIT,
       offset: 0
@@ -35,35 +44,42 @@ const App = () => {
       if (entries[0].isIntersecting) {
         fetchMore({
           variables: PokeFetchVariables({
-            offset: data.pokemon.length,
-            types: atomSelectedTypes
+            offset: pokemon.length,
+            types: atomSelectedTypes,
+            pokeName: atomInputName
           }),
-          updateQuery: (previousResult: Pokemon, { fetchMoreResult }) => {
-            if (!fetchMoreResult) {
-              return previousResult
+          updateQuery: (previousResult: Pokemon, { fetchMoreResult: { pokemon: morePokemon } }) => {
+            if (morePokemon.length === 0) {
+              console.log(morePokemon)
+              setLastItem(true)
+              return Object.assign({}, previousResult)
             }
-            return Object.assign({}, previousResult, {
-              pokemon: [...previousResult.pokemon, ...fetchMoreResult.pokemon]
-            })
+            setLastItem(false)
+            return Object.assign(
+              {},
+              {
+                pokemon: [...previousResult.pokemon, ...morePokemon]
+              }
+            )
           }
         })
       }
     }, options)
 
-    if (_loader) {
-      observer.observe(_loader)
-    }
+    if (_loader) observer.observe(_loader)
+
     return () => {
-      observer.unobserve(_loader)
+      if (_loader) observer.unobserve(_loader)
     }
-  }, [data.pokemon, atomSelectedTypes, fetchMore])
+  }, [pokemon, atomSelectedTypes, atomInputName, fetchMore, setLastItem])
 
   return (
     <section>
       <Filters fetchMore={fetchMore} />
-      <div className="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 xl:gap-8 md:gap-6 gap-2 md:mx-0 mx-3">
-        {data &&
-          data.pokemon.map(
+
+      {pokemon.length > 0 ? (
+        <div className="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 xl:gap-8 md:gap-6 gap-2 md:mx-0 mx-3">
+          {pokemon.map(
             ({
               id,
               name,
@@ -71,12 +87,24 @@ const App = () => {
                 color: { name: color }
               },
               types
-            }) => <Cart key={id} name={name} color={color} id={id} types={types} />
+            }) => (
+              <Cart key={id} name={name} color={color} id={id} types={types} />
+            )
           )}
-      </div>
+        </div>
+      ) : (
+        <div className="flex-row text-center justify-center ">
+          <Image alt="No results" width="719" height="677" src={'/images/pikachu.png'} />
+          <div className="text-3xl text-white">No results found</div>
+        </div>
+      )}
       <ScrollToTop />
-      <div className="mb-6 mt-10" ref={loader}>
-        <Pokeball />
+      <div className="mb-6 mt-10 h-24">
+        {!lastItem && (
+          <div ref={loader}>
+            <Pokeball />
+          </div>
+        )}
       </div>
     </section>
   )

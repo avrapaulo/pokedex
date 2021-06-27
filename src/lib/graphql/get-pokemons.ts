@@ -32,7 +32,7 @@ export const GetPokemons = gql`
       where: {
         _or: {
           pokemon_v2_pokemontypes: { pokemon_v2_type: { name: { _in: $types } } }
-          _and: { name: { _regex: $pokeName } }
+          _and: { id: { _lt: 899 }, name: { _regex: $pokeName } }
         }
       }
       order_by: { id: asc }
