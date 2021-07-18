@@ -11,8 +11,7 @@ import { DEFAULT_LIMIT } from 'constant'
 import { Pokeball } from 'constant/svg'
 import { Pokemon } from 'models'
 import { Cart } from 'components/cart'
-import { ScrollToTop } from 'components/scroll-top'
-import { Filters } from 'components/filters'
+import { OpenIcon, Modal } from 'components/filters'
 
 const App = () => {
   const atomSelectedTypes = useRecoilValue(selectedTypes)
@@ -75,7 +74,7 @@ const App = () => {
 
   return (
     <section>
-      <Filters fetchMore={fetchMore} />
+      <Modal fetchMore={fetchMore} />
 
       {pokemon.length > 0 ? (
         <div className="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 xl:gap-8 md:gap-6 gap-2 md:mx-0 mx-3">
@@ -93,12 +92,14 @@ const App = () => {
           )}
         </div>
       ) : (
-        <div className="flex-row text-center justify-center ">
+        // TODO: scroll bar space with modal
+        // style={{ marginRight: `${isDisplayFilers ? '0' : '17px'}` }}
+        <div className="flex-row text-center justify-center">
           <Image alt="No results" width="719" height="677" src={'/images/pikachu.png'} />
           <div className="text-3xl text-white">No results found</div>
         </div>
       )}
-      <ScrollToTop />
+      <OpenIcon />
       <div className="mb-6 mt-10 h-24">
         {!lastItem && (
           <div ref={loader}>

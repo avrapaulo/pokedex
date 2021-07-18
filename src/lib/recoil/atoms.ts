@@ -14,3 +14,8 @@ export const isLastPokemon = atom({
   key: 'isLastPokemon',
   default: false
 })
+
+export const displayFilters = atom({
+  key: 'displayFilters',
+  default: false
+})
