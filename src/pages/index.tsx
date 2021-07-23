@@ -5,7 +5,7 @@ import { useQuery } from '@apollo/client'
 import { useRecoilValue, useRecoilState } from 'recoil'
 import { addApolloState, initializeApollo } from 'lib/apollo'
 import { GetPokemons } from 'lib/graphql'
-import { inputName, isLastPokemon, selectedTypes } from 'lib/recoil'
+import { displayFilters, inputName, isLastPokemon, selectedTypes } from 'lib/recoil'
 import { PokeFetchVariables } from 'utils'
 import { DEFAULT_LIMIT } from 'constant'
 import { Pokeball } from 'constant/svg'
@@ -15,6 +15,7 @@ import { OpenIcon, Modal } from 'components/filters'
 
 const App = () => {
   const atomSelectedTypes = useRecoilValue(selectedTypes)
+  const isDisplayFilers = useRecoilValue(displayFilters)
   const atomInputName = useRecoilValue(inputName)
   const [lastItem, setLastItem] = useRecoilState(isLastPokemon)
   const {
@@ -29,6 +30,24 @@ const App = () => {
     }
   })
   const loader = useRef()
+
+  useEffect(() => {
+    const windowHeight = window.innerHeight
+    const scrollbarWidth = '16px'
+    const userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent
+    const mobile = Boolean(
+      userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i)
+    )
+
+    if (isDisplayFilers && !mobile) {
+      document.documentElement.style.paddingRight =
+        document.getElementById('__next').clientHeight < windowHeight ? '' : scrollbarWidth
+    }
+
+    return () => {
+      document.documentElement.style.paddingRight = ''
+    }
+  }, [pokemon, isDisplayFilers])
 
   useEffect(() => {
     const options = {
@@ -92,9 +111,7 @@ const App = () => {
           )}
         </div>
       ) : (
-        // TODO: scroll bar space with modal
-        // style={{ marginRight: `${isDisplayFilers ? '0' : '17px'}` }}
-        <div className="flex-row text-center justify-center">
+        <div className="flex-row text-center justify-center mx-auto">
           <Image alt="No results" width="719" height="677" src={'/images/pikachu.png'} />
           <div className="text-3xl text-white">No results found</div>
         </div>

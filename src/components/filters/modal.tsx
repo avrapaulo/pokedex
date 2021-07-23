@@ -49,8 +49,7 @@ export const Modal = ({ fetchMore }: { fetchMore: any }) => {
     <Transition.Root show={open} as={Fragment}>
       <Dialog
         as="div"
-        static
-        className="fixed inset-0 z-10"
+        className="fixed inset-0 z-10 overflow-y-auto"
         open={open}
         onClose={() => setOpen(false)}
       >
