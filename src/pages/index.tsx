@@ -64,7 +64,7 @@ const App = () => {
           variables: PokeFetchVariables({
             offset: pokemon.length,
             types: atomSelectedTypes,
-            pokeName: atomInputName
+            pokeName: atomInputName.toLowerCase()
           }),
           updateQuery: (previousResult: Pokemon, { fetchMoreResult: { pokemon: morePokemon } }) => {
             if (morePokemon.length === 0) {
