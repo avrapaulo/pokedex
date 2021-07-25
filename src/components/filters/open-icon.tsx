@@ -1,6 +1,6 @@
 import { AdjustmentsIcon } from '@heroicons/react/outline'
-import { useSetRecoilState } from 'recoil'
-import { displayFilters } from 'lib/recoil'
+import { useRecoilValue, useSetRecoilState } from 'recoil'
+import { displayFilters, inputName, selectedTypes } from 'lib/recoil'
 
 const goTop = () =>
   window.scrollTo({
@@ -10,6 +10,8 @@ const goTop = () =>
 
 export const OpenIcon = () => {
   const setDisplayFilters = useSetRecoilState(displayFilters)
+  const atomSelectedTypes = useRecoilValue(selectedTypes)
+  const atomInputName = useRecoilValue(inputName)
 
   return (
     <div
@@ -20,6 +22,9 @@ export const OpenIcon = () => {
       }}
     >
       <AdjustmentsIcon className="h-7 w-7" aria-hidden="true" />
+      {(atomInputName.length > 0 || atomSelectedTypes.length > 0) && (
+        <div className="bg-red-700 rounded-full w-3 h-3 absolute -top-1 right-0" />
+      )}
     </div>
   )
 }

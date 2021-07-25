@@ -14,7 +14,7 @@ Welcome to my version of Pokedex, where you can see all pokemons.
 
 ## Demo
 
-<https://pokedex.pauloavra.vercel.app/>
+<https://pokedex-pauloavra.vercel.app/>
 
 ## Getting Started
 
